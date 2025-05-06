@@ -1,0 +1,53 @@
+{
+  "students": [
+    {
+      "id": "1746186862783",
+      "firstName": "Kimdira",
+      "lastName": "Nimayeva",
+      "birthDate": "2025-05-17",
+      "classId": null
+    },
+    {
+      "id": "1746465506491",
+      "firstName": "Ahror",
+      "lastName": "Sulaymonov",
+      "birthDate": "2025-05-01",
+      "classId": null
+    },
+    {
+      "id": "1746465528059",
+      "firstName": "rvrv",
+      "lastName": "rvrvrt",
+      "birthDate": "2025-05-02",
+      "classId": "1746464881494"
+    }
+  ],
+  "classes": [
+    {
+      "id": "1746471012464",
+      "name": "Gaming Mouses",
+      "studentCount": 0,
+      "teacherId": "1746470694932"
+    }
+  ],
+  "teachers": [
+    {
+      "id": "1746470694932",
+      "firstName": "Kimdir",
+      "lastName": "Nimayev",
+      "birthDate": "2025-04-29",
+      "classes": [
+        1746465703837
+      ]
+    }
+  ],
+  "school": {
+    "name": "144-sonli Umumta'lim maktabi",
+    "location": "Muqiymiy ko'ch. 100 uy",
+    "overallStudentCount": 1,
+    "overallStaffCount": 1,
+    "overallClassCount": 1,
+    "about": "Yaxshi maktab!",
+    "phoneNumber": "+9989565555551"
+  }
+}
