@@ -4,12 +4,37 @@ import styled from "styled-components";
 import { TableProps } from "./types";
 
 // TypeScript uchun styled-component'ni kengaytirish
-interface TableWrapperProps
-  extends React.TableHTMLAttributes<HTMLTableElement> {
+interface TableWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   isClass?: boolean;
 }
 
-const TableWrapper = styled.table<TableWrapperProps>`
+const TableWrapper = styled.div<TableWrapperProps>`
+  width: 100%;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  table tbody tr,
+  table tr th,
+  table tr td {
+    border: 1px solid #f0f0f0;
+  }
+
+  th,
+  td {
+    padding: 6px 14px;
+  }
+
+  th {
+    text-align: left;
+    background-color: #f0f0f060;
+  }
+
   tr {
     cursor: ${(props) => (props.isClass ? "pointer" : "default")};
   }

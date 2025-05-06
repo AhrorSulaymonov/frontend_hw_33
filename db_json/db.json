@@ -1,32 +1,18 @@
 {
   "students": [
     {
-      "id": "1746186862783",
-      "firstName": "Kimdira4",
-      "lastName": "Nimayeva",
-      "birthDate": "2025-05-17",
-      "classId": "1746537051669"
-    },
-    {
-      "id": "1746465506491",
+      "id": "1746541619621",
       "firstName": "Ahror",
       "lastName": "Sulaymonov",
-      "birthDate": "2025-05-01",
-      "classId": "null"
-    },
-    {
-      "id": "1746465528059",
-      "firstName": "rvrv",
-      "lastName": "rvrvrt",
-      "birthDate": "2025-05-02",
-      "classId": "1746464881494"
-    },
-    {
-      "id": "1746541494651",
-      "firstName": "Ahror",
-      "lastName": "Sulaymonov",
-      "birthDate": "2025-04-29",
+      "birthDate": "2025-04-30",
       "classId": "1746471012464"
+    },
+    {
+      "id": "1746541635311",
+      "firstName": "Kimdir",
+      "lastName": "Sulaymonov",
+      "birthDate": "2025-05-06",
+      "classId": "1746537051669"
     }
   ],
   "classes": [

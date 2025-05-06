@@ -11,6 +11,7 @@ export const TableWrapper = styled.div`
     border-collapse: collapse;
   }
 
+
   table tbody tr,
   table tr th,
   table tr td {
