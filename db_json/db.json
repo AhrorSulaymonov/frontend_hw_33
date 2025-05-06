@@ -1,61 +1,22 @@
 {
-  "students": [
-    {
-      "id": "1746541619621",
-      "firstName": "Ahror",
-      "lastName": "Sulaymonov",
-      "birthDate": "2025-04-30",
-      "classId": "1746471012464"
-    },
-    {
-      "id": "1746541635311",
-      "firstName": "Kimdir",
-      "lastName": "Sulaymonov",
-      "birthDate": "2025-05-06",
-      "classId": "1746537051669"
-    }
-  ],
-  "classes": [
-    {
-      "id": "1746471012464",
-      "name": "Gaming Mouses",
-      "studentCount": 0,
-      "teacherId": "1746470694932"
-    },
-    {
-      "id": "1746537051669",
-      "name": "Qatiq1",
-      "studentCount": 0,
-      "teacherId": "1746470694932"
-    }
-  ],
+  "students": [],
+  "classes": [],
   "teachers": [
     {
-      "id": "1746470694932",
+      "id": "1746556245764",
       "firstName": "Kimdir",
-      "lastName": "Nimayev",
-      "birthDate": "2025-04-29",
-      "classes": [
-        1746465703837
-      ]
-    },
-    {
-      "id": "1746537075414",
-      "firstName": "Kimdira",
       "lastName": "Nimayeva",
-      "birthDate": "2025-04-28",
-      "classes": [
-        1746537051669
-      ]
+      "birthDate": "2025-05-02",
+      "classes": []
     }
   ],
   "school": {
-    "name": "144-sonli Umumta'lim maktabi",
-    "location": "Muqiymiy ko'ch. 100 uy",
-    "overallStudentCount": 1,
-    "overallStaffCount": 1,
-    "overallClassCount": 1,
-    "about": "Yaxshi maktab!",
-    "phoneNumber": "+9989565555551"
+    "name": "Sizning Maktabingiz Nomi",
+    "location": "Maktab manzili",
+    "overallStudentCount": 0,
+    "overallStaffCount": 0,
+    "overallClassCount": 0,
+    "about": "Bu maktab haqida qisqacha ma'lumot.",
+    "phoneNumber": "+998XXYYYYYYY"
   }
 }

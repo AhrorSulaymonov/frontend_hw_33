@@ -1,12 +1,14 @@
 import { Class } from "../types";
 import instance from "./instance";
+import { toast } from "react-toastify";
 
 export const getClasses = async () => {
   try {
     const res = await instance.get<Class[]>("/classes");
     return res.data;
   } catch (e) {
-    alert("Failed to fetch Classes!");
+    toast.error("Sinflarni yuklashda xatolik!");
+    throw e;
   }
 };
 
@@ -15,7 +17,8 @@ export const getOneClass = async (id: string | number) => {
     const res = await instance.get<Class>(`/classes/${id}`);
     return res.data;
   } catch (e) {
-    alert("Failed to fetch class!");
+    toast.error("Sinf ma'lumotlarini yuklashda xatolik!");
+    throw e;
   }
 };
 
@@ -24,7 +27,8 @@ export const createClass = async (data: Class) => {
     const res = await instance.post("/classes", data);
     return res.data;
   } catch (e) {
-    alert("Failed to post data!");
+    toast.error("Sinf yaratishda xatolik!");
+    throw e;
   }
 };
 
@@ -33,7 +37,8 @@ export const deleteClass = async (classId: number | string) => {
     const res = await instance.delete(`/classes/${classId}`);
     return res.data;
   } catch (error) {
-    alert("Failed to delete class");
+    toast.error("Sinfni o'chirishda xatolik!");
+    throw error;
   }
 };
 
@@ -42,6 +47,7 @@ export const updateClass = async (data: Class) => {
     const res = await instance.put(`/classes/${data.id}`, data);
     return res.data;
   } catch (error) {
-    alert("Failed to update class");
+    toast.error("Sinfni yangilashda xatolik!");
+    throw error;
   }
 };

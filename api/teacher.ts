@@ -1,12 +1,14 @@
 import { Teacher } from "../types";
 import instance from "./instance";
+import { toast } from "react-toastify";
 
 export const getTeachers = async () => {
   try {
     const res = await instance.get<Teacher[]>("/teachers");
     return res.data;
   } catch (e) {
-    alert("Failed to fetch Teachers!");
+    toast.error("O'qituvchilarni yuklashda xatolik!");
+    throw e;
   }
 };
 
@@ -15,7 +17,8 @@ export const getOneTeacher = async (id: string | number) => {
     const res = await instance.get<Teacher>(`/teachers/${id}`);
     return res.data;
   } catch (e) {
-    alert("Failed to fetch teacher!");
+    toast.error("O'qituvchi ma'lumotlarini yuklashda xatolik!");
+    throw e;
   }
 };
 
@@ -24,7 +27,8 @@ export const createTeacher = async (data: Teacher) => {
     const res = await instance.post("/teachers", data);
     return res.data;
   } catch (e) {
-    alert("Failed to post teacher data!");
+    toast.error("O'qituvchi yaratishda xatolik!");
+    throw e;
   }
 };
 
@@ -33,7 +37,8 @@ export const deleteTeacher = async (teacherId: number | string) => {
     const res = await instance.delete(`/teachers/${teacherId}`);
     return res.data;
   } catch (error) {
-    alert("Failed to delete teacher!");
+    toast.error("O'qituvchini o'chirishda xatolik!");
+    throw error;
   }
 };
 
@@ -42,6 +47,7 @@ export const updateTeacher = async (data: Teacher) => {
     const res = await instance.put(`/teachers/${data.id}`, data);
     return res.data;
   } catch (error) {
-    alert("Failed to update teacher!");
+    toast.error("O'qituvchini yangilashda xatolik!");
+    throw error;
   }
 };

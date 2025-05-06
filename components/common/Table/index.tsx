@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import styled from "styled-components";
 import { TableProps } from "./types";
 
-// TypeScript uchun styled-component'ni kengaytirish
 interface TableWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   isClass?: boolean;
 }
@@ -37,6 +36,10 @@ const TableWrapper = styled.div<TableWrapperProps>`
 
   tr {
     cursor: ${(props) => (props.isClass ? "pointer" : "default")};
+    &:hover {
+      background-color: ${(props) =>
+        props.isClass ? "#f9f9f9" : "transparent"};
+    }
   }
 `;
 
@@ -45,33 +48,32 @@ const Table: FC<TableProps> = (props) => {
   const {
     columns = [],
     dataSrc = [],
-    loading = true,
+    loading = false, // Odatda hook dan keladi, boshlang'ich qiymat false
     isClass,
     actionsCol = () => null,
   } = props;
 
   const loadingContent =
-    dataSrc.length === 0 && !!loading ? (
+    loading && dataSrc.length === 0 ? ( // loading true va data yo'q bo'lsa
       <tr>
         <td colSpan={columns.length} style={{ textAlign: "center" }}>
-          Loading...
+          Yuklanmoqda...
         </td>
       </tr>
     ) : null;
 
   const emptyContent =
-    dataSrc.length === 0 && !loading ? (
+    !loading && dataSrc.length === 0 ? ( // loading false va data yo'q bo'lsa
       <tr>
         <td colSpan={columns.length} style={{ textAlign: "center" }}>
-          No Data
+          Ma'lumotlar mavjud emas
         </td>
       </tr>
     ) : null;
 
   const handleRowClick = (data: any) => {
-    if (isClass) {
-      const classId = data.id; // classId ni aniqlash
-      router.push(`/students?classId=${classId}`);
+    if (isClass && data.id) {
+      router.push(`/students?classId=${data.id}`);
     }
   };
 
@@ -90,24 +92,29 @@ const Table: FC<TableProps> = (props) => {
         <tbody>
           {loadingContent}
           {emptyContent}
-          {dataSrc.map((data) => (
-            <tr
-              key={data[columns[0]?.dataIndex]}
-              onClick={() => handleRowClick(data)}
-            >
-              {columns.map((col) => {
-                return col.dataIndex === "actions" ? (
-                  <td style={{ width: `${col.width}%` }} key={col.dataIndex}>
-                    {actionsCol(data)}
-                  </td>
-                ) : (
-                  <td style={{ width: `${col.width}%` }} key={col.dataIndex}>
-                    {data[col.dataIndex]}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          {dataSrc.map(
+            (
+              data,
+              index // data da unique id bo'lmasa index ishlatish mumkin, lekin id afzal
+            ) => (
+              <tr
+                key={data.id || `row-${index}`} // Har bir data elementi uchun 'id' bo'lishi kerak
+                onClick={() => handleRowClick(data)}
+              >
+                {columns.map((col) => {
+                  return col.dataIndex === "actions" ? (
+                    <td style={{ width: `${col.width}%` }} key={col.dataIndex}>
+                      {actionsCol(data)}
+                    </td>
+                  ) : (
+                    <td style={{ width: `${col.width}%` }} key={col.dataIndex}>
+                      {data[col.dataIndex]}
+                    </td>
+                  );
+                })}
+              </tr>
+            )
+          )}
         </tbody>
       </table>
     </TableWrapper>

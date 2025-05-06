@@ -2,21 +2,19 @@ import React, { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { ClassCreateWrapper } from "./Classes.styles";
 import { Button, Input, Select } from "@/components";
-import { createClassMutation, updateClassMutation, useOneClass } from "@/hooks";
+import {
+  createClassMutation,
+  updateClassMutation,
+  useOneClass,
+  useTeachers,
+} from "@/hooks";
 import { getOptionFromDataAdapter } from "@/utils";
-import { useTeachers } from "../../hooks/useTeachers";
-
-export interface Class {
-  id: number | string;
-  name: string;
-  studentCount: number;
-  teacherId: number | string;
-}
+import { toast } from "react-toastify";
+import { Class as ClassType } from "@/types"; // Interfeys nomini o'zgartirdim
 
 const CreateUpdateClass = () => {
   const router = useRouter();
   const { id } = router.query;
-
   const isEditMode = !!id;
 
   const [classValues, setClassValues] = useState({
@@ -25,9 +23,9 @@ const CreateUpdateClass = () => {
     teacherId: "",
   });
 
-  const { data: classData, isLoading: isClassLoading } = useOneClass({
-    id: id as string,
-  });
+  const { data: classData, isLoading: isClassLoading } = useOneClass(
+    id ? { id: id as string } : {}
+  );
   const { data: teachers = [], isLoading: isTeachersLoading } = useTeachers();
 
   useEffect(() => {
@@ -35,80 +33,82 @@ const CreateUpdateClass = () => {
       setClassValues({
         name: classData.name,
         studentCount: classData.studentCount,
-        teacherId: String(classData.teacherId), // Convert to string
+        teacherId: String(classData.teacherId),
       });
     }
   }, [classData, isEditMode]);
 
   useEffect(() => {
-    if (teachers.length > 0 && !classValues.teacherId && !isEditMode) {
+    if (teachers.length > 0 && !classValues.teacherId && !isEditMode && !id) {
+      // Faqat yangi yaratishda va id yo'q bo'lsa
       setClassValues((prev) => ({
         ...prev,
-        teacherId: String(teachers[0].id), // Convert to string
+        teacherId: String(teachers[0].id),
       }));
     }
-  }, [teachers]);
+  }, [teachers, isEditMode, id, classValues.teacherId]); // classValues.teacherId ni dependencylarga qo'shdim
 
-  const classMutation = createClassMutation({
+  const commonMutationOptions = {
     onSuccess: () => {
+      toast.success(
+        `Sinf muvaffaqiyatli ${isEditMode ? "yangilandi" : "yaratildi"}!`
+      );
       router.push("/classes");
     },
-    onError: (err) => {
-      alert("Sinf yaratishda xatolik!");
-      console.error(err);
+    onError: (err: any) => {
+      toast.error(`Xatolik: ${err?.message || "Noma'lum xatolik"}`);
     },
-  });
+  };
 
-  const classUpdateMutation = updateClassMutation({
-    onSuccess: () => {
-      router.push("/classes");
-    },
-    onError: (err) => {
-      alert("Sinf yangilashda xatolik!");
-      console.error(err);
-    },
-  });
+  const classCreateMut = createClassMutation(commonMutationOptions);
+  const classUpdateMut = updateClassMutation(commonMutationOptions);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    console.log("handleChange:", name, value); // Debugging
     setClassValues((prev) => ({
       ...prev,
-      [name]: name === "studentCount" ? Number(value) : value,
+      [name]:
+        name === "studentCount" ? (value === "" ? 0 : Number(value)) : value,
     }));
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!classValues.teacherId) {
-      alert("Iltimos, o'qituvchi tanlang!");
+    if (
+      !classValues.name ||
+      classValues.studentCount < 0 ||
+      !classValues.teacherId
+    ) {
+      toast.error(
+        "Iltimos, barcha maydonlarni to'g'ri to'ldiring va o'qituvchi tanlang!"
+      );
       return;
     }
 
-    const newClass: Class = {
-      id: isEditMode ? (id as string) : String(Date.now()),
+    const newClassData: ClassType = {
+      // O'zgartirilgan interfeys nomidan foydalandim
+      id: isEditMode ? (id as string) : String(Date.now()), // Yangi ID generatsiya qilish
       name: classValues.name,
       studentCount: classValues.studentCount,
-      teacherId: classValues.teacherId, // Backend ga moslashtiring (agar number kerak bo'lsa Number() qo'shing)
+      teacherId: classValues.teacherId, // Backend number kutsa, Number(classValues.teacherId)
     };
 
-    console.log("newClass", newClass);
-
-    isEditMode
-      ? classUpdateMutation.mutate(newClass)
-      : classMutation.mutate(newClass);
+    if (isEditMode) {
+      classUpdateMut.mutate(newClassData);
+    } else {
+      classCreateMut.mutate(newClassData);
+    }
   };
 
-  if (isTeachersLoading || isClassLoading) {
+  if (isTeachersLoading || (isEditMode && isClassLoading)) {
     return <div>Ma'lumotlar yuklanmoqda...</div>;
   }
 
   return (
     <ClassCreateWrapper>
-      <h1>{isEditMode ? "Sinfni yangilash" : "Sinf yaratish"}</h1>
+      <h1>{isEditMode ? "Sinfni yangilash" : "Yangi sinf yaratish"}</h1>
       <form onSubmit={handleSubmit}>
         <Input
           value={classValues.name}
@@ -116,21 +116,30 @@ const CreateUpdateClass = () => {
           type="text"
           onChange={handleChange}
           placeholder="Sinf nomi"
+          required
         />
         <Input
-          value={classValues.studentCount.toString()}
+          value={classValues.studentCount.toString()} // Inputga string berish kerak
           name="studentCount"
           type="number"
           onChange={handleChange}
           placeholder="O'quvchilar soni"
+          min="0" // Minimal qiymat
+          required
         />
         <Select
           value={classValues.teacherId}
           name="teacherId"
           onChange={handleChange}
-          options={getOptionFromDataAdapter(teachers, "firstName")}
-        />
-        <Button type="submit">Saqlash</Button>
+          options={getOptionFromDataAdapter(teachers, "firstName", "id")} // valueKey "id"
+          required
+        >
+          <option value="" disabled>
+            O'qituvchini tanlang
+          </option>{" "}
+          {/* Placeholder option */}
+        </Select>
+        <Button type="submit" title="Saqlash" />
       </form>
     </ClassCreateWrapper>
   );

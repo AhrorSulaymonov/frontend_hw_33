@@ -1,21 +1,21 @@
 export const classTableCols = [
   {
-    title: "Name",
+    title: "Sinf nomi",
     dataIndex: "name",
     width: 30,
   },
   {
-    title: "Student count",
+    title: "O'quvchilar soni",
     dataIndex: "studentCount",
     width: 30,
   },
   {
-    title: "Teacher id",
+    title: "O'qituvchi ID", // Yoki O'qituvchi (agar join qilingan bo'lsa)
     dataIndex: "teacherId",
     width: 30,
   },
   {
-    title: "Actions",
+    title: "Amallar",
     dataIndex: "actions",
     width: 10,
   },

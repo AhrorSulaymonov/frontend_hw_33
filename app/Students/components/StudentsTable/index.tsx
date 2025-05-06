@@ -14,66 +14,74 @@ import { toast } from "react-toastify";
 const StudentsTable = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-
-  // URL'dan classId ni tekshirish
   const { classId } = router.query;
-  console.log("classId:", classId); // Debug uchun log
 
-  // classId mavjud bo'lsa useStudentsByClassId, aks holda useStudents
-  const {
-    data: students,
-    isLoading,
-    isError,
-    error,
-  } = classId ? useStudentsByClassId(classId as string) : useStudents();
+  const studentsQuery = classId
+    ? useStudentsByClassId(classId as string)
+    : useStudents();
 
-  console.log("Students data:", students); // Ma'lumotlarni tekshirish
-  console.log("Loading state:", isLoading); // Loading holatini tekshirish
-  console.log("Error state:", isError, error); // Xatolarni tekshirish
+  const { data: students, isLoading, isError, error } = studentsQuery;
 
-  const deleteMutation = deleteStudentMutation({
+  const deleteMut = deleteStudentMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      if (classId) {
+        queryClient.invalidateQueries({
+          queryKey: ["students-by-classId", classId],
+        });
+      }
       toast.success("O'quvchi muvaffaqiyatli o'chirildi!");
     },
     onError: (err: any) => {
-      console.error("O'chirishda xatolik:", err);
       toast.error(
         `O'quvchini o'chirishda xatolik: ${err?.message || "Noma'lum xatolik"}`
       );
     },
   });
 
-  const handleDelete = (student: any) => {
+  const handleDelete = async (student: any) => {
     if (
-      window.confirm(`O'quvchi ${student.name} ni o'chirishni xohlaysizmi?`)
+      window.confirm(
+        `O'quvchi ${student.firstName} ${student.lastName}ni o'chirishni xohlaysizmi?`
+      )
     ) {
-      deleteMutation.mutate(student.id);
+      deleteMut.mutate(student.id);
     }
   };
 
-  if (isLoading)
-    return (
-      <p>O'quvchilar yuklanmoqda... (Agar uzoq tursa, konsolni tekshiring)</p>
-    );
-  if (isError)
+  let tableTitle = "Barcha O'quvchilar";
+  if (classId && students && students.length > 0) {
+    // Sinf nomini olish kerak bo'lsa, qo'shimcha logikani qo'shish mumkin
+    // Masalan, useOneClass hookidan foydalanib
+    tableTitle = `${classId}-sinf o'quvchilari`;
+  } else if (classId) {
+    tableTitle = `${classId}-sinf o'quvchilari`;
+  }
+
+  if (isError) {
     return (
       <p>
-        O'quvchilarni yuklashda xatolik yuz berdi. Xatolik: {error?.message}
+        O'quvchilarni yuklashda xatolik yuz berdi: {error?.message}. Iltimos,
+        sahifani yangilang.
       </p>
     );
+  }
 
   return (
-    <Table
-      dataSrc={students}
-      columns={studentTableCols}
-      actionsCol={(student) => (
-        <ActionsWrapper>
-          <Button onClick={() => handleDelete(student)}>O'chirish</Button>
-          <Button href={`/students/edit/${student.id}`}>Yangilash</Button>
-        </ActionsWrapper>
-      )}
-    />
+    <>
+      {classId && <h2 style={{ marginBottom: "15px" }}>{tableTitle}</h2>}
+      <Table
+        dataSrc={students || []}
+        columns={studentTableCols}
+        loading={isLoading}
+        actionsCol={(student) => (
+          <ActionsWrapper>
+            <Button onClick={() => handleDelete(student)}>O'chirish</Button>
+            <Button href={`/students/edit/${student.id}`}>Yangilash</Button>
+          </ActionsWrapper>
+        )}
+      />
+    </>
   );
 };
 

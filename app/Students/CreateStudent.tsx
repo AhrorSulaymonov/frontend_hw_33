@@ -9,19 +9,12 @@ import {
   useOneStudent,
 } from "@/hooks";
 import { getOptionFromDataAdapter } from "@/utils";
-
-export interface Student {
-  id: number | string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  classId: number | string;
-}
+import { toast } from "react-toastify";
+import { Student as StudentType } from "@/types"; // Interfeys nomini o'zgartirdim
 
 const CreateUpdateStudent = () => {
   const router = useRouter();
   const { id } = router.query;
-
   const isEditMode = !!id;
 
   const [studentValues, setStudentValues] = useState({
@@ -31,56 +24,50 @@ const CreateUpdateStudent = () => {
     classId: "",
   });
 
-  const { data: student, isLoading: isStudentLoading } = useOneStudent({
-    id: id as string,
-  });
+  const { data: studentData, isLoading: isStudentLoading } = useOneStudent(
+    id ? { id: id as string } : {}
+  );
   const { data: classes = [], isLoading: isClassesLoading } = useClasses();
 
   useEffect(() => {
-    if (student && isEditMode) {
+    if (studentData && isEditMode) {
       setStudentValues({
-        firstName: student.firstName,
-        lastName: student.lastName,
-        birthDate: student.birthDate,
-        classId: String(student.classId), // Convert to string for consistency
+        firstName: studentData.firstName,
+        lastName: studentData.lastName,
+        birthDate: studentData.birthDate,
+        classId: String(studentData.classId),
       });
     }
-  }, [student, isEditMode]);
+  }, [studentData, isEditMode]);
 
   useEffect(() => {
-    if (classes.length > 0 && !studentValues.classId && !isEditMode) {
+    if (classes.length > 0 && !studentValues.classId && !isEditMode && !id) {
       setStudentValues((prev) => ({
         ...prev,
-        classId: String(classes[0].id), // Default to first class
+        classId: String(classes[0].id),
       }));
     }
-  }, [classes]);
+  }, [classes, isEditMode, id, studentValues.classId]);
 
-  const studentMutation = createStudentMutation({
+  const commonMutationOptions = {
     onSuccess: () => {
+      toast.success(
+        `O'quvchi muvaffaqiyatli ${isEditMode ? "yangilandi" : "yaratildi"}!`
+      );
       router.push("/students");
     },
-    onError: (err) => {
-      alert("O'quvchi yaratishda xatolik!");
-      console.error(err);
+    onError: (err: any) => {
+      toast.error(`Xatolik: ${err?.message || "Noma'lum xatolik"}`);
     },
-  });
+  };
 
-  const studentUpdateMutation = updateStudentMutation({
-    onSuccess: () => {
-      router.push("/students");
-    },
-    onError: (err) => {
-      alert("O'quvchi yangilashda xatolik!");
-      console.error(err);
-    },
-  });
+  const studentCreateMut = createStudentMutation(commonMutationOptions);
+  const studentUpdateMut = updateStudentMutation(commonMutationOptions);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    console.log("handleChange:", name, value); // Debugging
     setStudentValues((prev) => ({
       ...prev,
       [name]: value,
@@ -89,39 +76,38 @@ const CreateUpdateStudent = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (
       !studentValues.firstName ||
       !studentValues.lastName ||
       !studentValues.birthDate ||
       !studentValues.classId
     ) {
-      alert("Iltimos, barcha maydonlarni to'ldiring!");
+      toast.error("Iltimos, barcha maydonlarni to'ldiring!");
       return;
     }
 
-    const newStudent: Student = {
+    const newStudentData: StudentType = {
       id: isEditMode ? (id as string) : String(Date.now()),
       firstName: studentValues.firstName,
       lastName: studentValues.lastName,
       birthDate: studentValues.birthDate,
-      classId: studentValues.classId, // Backend number talab qilsa Number() qo'shing
+      classId: studentValues.classId, // Backend number kutsa: Number(studentValues.classId)
     };
 
-    console.log("newStudent", newStudent);
-
-    isEditMode
-      ? studentUpdateMutation.mutate(newStudent)
-      : studentMutation.mutate(newStudent);
+    if (isEditMode) {
+      studentUpdateMut.mutate(newStudentData);
+    } else {
+      studentCreateMut.mutate(newStudentData);
+    }
   };
 
-  if (isStudentLoading || isClassesLoading) {
+  if (isClassesLoading || (isEditMode && isStudentLoading)) {
     return <div>Ma'lumotlar yuklanmoqda...</div>;
   }
 
   return (
     <StudentCreateWrapper>
-      <h1>{isEditMode ? "O'quvchini yangilash" : "O'quvchi yaratish"}</h1>
+      <h1>{isEditMode ? "O'quvchini yangilash" : "Yangi o'quvchi qo'shish"}</h1>
       <form onSubmit={handleSubmit}>
         <Input
           value={studentValues.firstName}
@@ -129,6 +115,7 @@ const CreateUpdateStudent = () => {
           type="text"
           onChange={handleChange}
           placeholder="Ism"
+          required
         />
         <Input
           value={studentValues.lastName}
@@ -136,6 +123,7 @@ const CreateUpdateStudent = () => {
           type="text"
           onChange={handleChange}
           placeholder="Familiya"
+          required
         />
         <Input
           value={studentValues.birthDate}
@@ -143,14 +131,20 @@ const CreateUpdateStudent = () => {
           type="date"
           onChange={handleChange}
           placeholder="Tug'ilgan sana"
+          required
         />
         <Select
           value={studentValues.classId}
           name="classId"
           onChange={handleChange}
-          options={getOptionFromDataAdapter(classes, "name")}
-        />
-        <Button type="submit">Saqlash</Button>
+          options={getOptionFromDataAdapter(classes, "name", "id")}
+          required
+        >
+          <option value="" disabled>
+            Sinfni tanlang
+          </option>
+        </Select>
+        <Button type="submit" title="Saqlash" />
       </form>
     </StudentCreateWrapper>
   );

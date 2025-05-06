@@ -5,6 +5,7 @@ import {
   getStudents,
   getStudentsByClassId,
   updateStudent,
+  deleteStudentsByClassId,
 } from "@/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { MutationFunctions, Student } from "../../types";
@@ -60,6 +61,17 @@ export function updateStudentMutation({
 }: MutationFunctions) {
   return useMutation({
     mutationFn: (data: Student) => updateStudent(data),
+    onSuccess,
+    onError,
+  });
+}
+
+export function deleteStudentsByClassIdMutation({
+  onSuccess,
+  onError,
+}: MutationFunctions) {
+  return useMutation({
+    mutationFn: (classId: string | number) => deleteStudentsByClassId(classId),
     onSuccess,
     onError,
   });

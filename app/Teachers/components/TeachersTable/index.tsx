@@ -7,9 +7,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
 const TeachersTable = () => {
-  const { data: teachers } = useTeachers();
+  const { data: teachers, isLoading } = useTeachers();
   const queryClient = useQueryClient();
-  const deleteMutation = deleteTeacherMutation({
+  const deleteMut = deleteTeacherMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["teachers"],
@@ -17,30 +17,36 @@ const TeachersTable = () => {
       toast.success("O'qituvchi muvaffaqiyatli o'chirildi!");
     },
     onError: (err: any) => {
-      console.error(err);
-      toast.error(`Xatolik yuz berdi! ${err?.status}`);
+      toast.error(
+        `O'qituvchini o'chirishda xatolik: ${
+          err?.message || "Noma'lum xatolik"
+        }`
+      );
     },
   });
 
   const handleDelete = async (teacher: any) => {
-    if (window.confirm("Bu o'qituvchini o'chirishga ishonchingiz komilmi?")) {
-      deleteMutation.mutate(teacher.id);
+    if (
+      window.confirm(
+        `O'qituvchi ${teacher.firstName} ${teacher.lastName}ni o'chirishga ishonchingiz komilmi?`
+      )
+    ) {
+      deleteMut.mutate(teacher.id);
     }
   };
 
   return (
     <div>
       <Table
-        actionsCol={(teacher) => {
-          return (
-            <ActionsWrapper>
-              <Button onClick={() => handleDelete(teacher)}>O'chirish</Button>
-              <Button href={`/teachers/edit/${teacher.id}`}>Yangilash</Button>
-            </ActionsWrapper>
-          );
-        }}
+        actionsCol={(teacher) => (
+          <ActionsWrapper>
+            <Button onClick={() => handleDelete(teacher)}>O'chirish</Button>
+            <Button href={`/teachers/edit/${teacher.id}`}>Yangilash</Button>
+          </ActionsWrapper>
+        )}
         columns={teacherTableCols}
-        dataSrc={teachers}
+        dataSrc={teachers || []}
+        loading={isLoading}
       />
     </div>
   );

@@ -6,14 +6,13 @@ import { useRouter } from "next/router";
 
 const Classes = () => {
   const router = useRouter();
-
   const navigateToCreate = () => router.push("/classes/create");
 
   return (
     <ClassesPageWrapper>
       <div className="title-side">
-        <h1>Classes</h1>
-        <Button onClick={navigateToCreate}>Add Class</Button>
+        <h1>Sinflar</h1>
+        <Button onClick={navigateToCreate} title="Sinf qo'shish" />
       </div>
       <ClassesTable />
     </ClassesPageWrapper>

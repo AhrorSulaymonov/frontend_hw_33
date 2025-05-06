@@ -1,131 +1,129 @@
 import React, { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { TeacherCreateWrapper } from "./Teachers.styles";
-import { Button, Input, Select } from "@/components";
+import { Button, Input, Select } from "@/components"; // Select ni import qildim
 import {
   createTeacherMutation,
   updateTeacherMutation,
-  useClasses,
+  useClasses, // O'qituvchiga sinf biriktirish uchun
   useOneTeacher,
 } from "@/hooks";
 import { getOptionFromDataAdapter } from "@/utils";
-
-export interface Teacher {
-  id: number | string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  classes: number[];
-}
+import { toast } from "react-toastify";
+import { Teacher as TeacherType } from "@/types";
 
 const CreateUpdateTeacher = () => {
   const router = useRouter();
   const { id } = router.query;
-
   const isEditMode = !!id;
 
   const [teacherValues, setTeacherValues] = useState({
     firstName: "",
     lastName: "",
     birthDate: "",
-    classes: [] as number[],
+    classes: [] as string[], // Sinf ID larini string massivi sifatida saqlaymiz (Select uchun)
   });
 
-  const { data: teacher, isLoading: isTeacherLoading } = useOneTeacher({
-    id: id as string,
-  });
-  const { data: classes = [], isLoading: isClassesLoading } = useClasses();
+  const { data: teacherData, isLoading: isTeacherLoading } = useOneTeacher(
+    id ? { id: id as string } : {}
+  );
+  const { data: allClasses = [], isLoading: isClassesLoading } = useClasses(); // Barcha sinflar
 
   useEffect(() => {
-    if (teacher && isEditMode) {
+    if (teacherData && isEditMode) {
       setTeacherValues({
-        firstName: teacher.firstName,
-        lastName: teacher.lastName,
-        birthDate: teacher.birthDate,
-        classes: teacher.classes || [], // Ensure array
+        firstName: teacherData.firstName,
+        lastName: teacherData.lastName,
+        birthDate: teacherData.birthDate,
+        classes: (teacherData.classes || []).map(String), // Raqamlarni stringga o'tkazamiz
       });
     }
-  }, [teacher, isEditMode]);
+  }, [teacherData, isEditMode]);
 
-  useEffect(() => {
-    if (
-      classes.length > 0 &&
-      teacherValues.classes.length === 0 &&
-      !isEditMode
-    ) {
-      setTeacherValues((prev) => ({
-        ...prev,
-        classes: [Number(classes[0].id)], // Default to first class as number
-      }));
-    }
-  }, [classes]);
+  // Yangi o'qituvchi yaratishda default sinf tanlash shart emas,
+  // lekin kerak bo'lsa, bu logikani qo'shish mumkin.
 
-  const teacherMutation = createTeacherMutation({
+  const commonMutationOptions = {
     onSuccess: () => {
+      toast.success(
+        `O'qituvchi muvaffaqiyatli ${isEditMode ? "yangilandi" : "yaratildi"}!`
+      );
       router.push("/teachers");
     },
-    onError: (err) => {
-      alert("O'qituvchi yaratishda xatolik!");
-      console.error(err);
+    onError: (err: any) => {
+      toast.error(`Xatolik: ${err?.message || "Noma'lum xatolik"}`);
     },
-  });
+  };
 
-  const teacherUpdateMutation = updateTeacherMutation({
-    onSuccess: () => {
-      router.push("/teachers");
-    },
-    onError: (err) => {
-      alert("O'qituvchi yangilashda xatolik!");
-      console.error(err);
-    },
-  });
+  const teacherCreateMut = createTeacherMutation(commonMutationOptions);
+  const teacherUpdateMut = updateTeacherMutation(commonMutationOptions);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    console.log("handleChange:", name, value); // Debugging
-    setTeacherValues((prev) => ({
-      ...prev,
-      [name]: name === "classes" ? [Number(value)] : value, // Single select for simplicity
-    }));
+    const { name, value, type } = e.target;
+
+    if (name === "classes") {
+      // Agar select multiple bo'lsa, shunday ishlanadi:
+      // const options = (e.target as HTMLSelectElement).options;
+      // const selectedClasses: string[] = [];
+      // for (let i = 0, l = options.length; i < l; i++) {
+      //   if (options[i].selected) {
+      //     selectedClasses.push(options[i].value);
+      //   }
+      // }
+      // setTeacherValues((prev) => ({ ...prev, classes: selectedClasses }));
+
+      // Hozircha bitta sinf tanlash (agar kerak bo'lsa)
+      setTeacherValues((prev) => ({ ...prev, classes: [value] }));
+    } else {
+      setTeacherValues((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (
       !teacherValues.firstName ||
       !teacherValues.lastName ||
-      !teacherValues.birthDate ||
-      teacherValues.classes.length === 0
+      !teacherValues.birthDate
+      // teacherValues.classes.length === 0 // Sinf tanlash majburiy bo'lsa
     ) {
-      alert("Iltimos, barcha maydonlarni to'ldiring!");
+      toast.error("Iltimos, barcha maydonlarni to'ldiring!");
       return;
     }
 
-    const newTeacher: Teacher = {
+    const newTeacherData: TeacherType = {
       id: isEditMode ? (id as string) : String(Date.now()),
       firstName: teacherValues.firstName,
       lastName: teacherValues.lastName,
       birthDate: teacherValues.birthDate,
-      classes: teacherValues.classes, // Array of numbers
+      // classes: teacherValues.classes.map(Number), // Backend number massivini kutsa
+      classes:
+        teacherValues.classes.length > 0
+          ? teacherValues.classes.map(Number)
+          : [], // Agar sinf tanlanmagan bo'lsa bo'sh massiv
     };
 
-    console.log("newTeacher", newTeacher);
-
-    isEditMode
-      ? teacherUpdateMutation.mutate(newTeacher)
-      : teacherMutation.mutate(newTeacher);
+    if (isEditMode) {
+      teacherUpdateMut.mutate(newTeacherData);
+    } else {
+      teacherCreateMut.mutate(newTeacherData);
+    }
   };
 
-  if (isTeacherLoading || isClassesLoading) {
+  if (isClassesLoading || (isEditMode && isTeacherLoading)) {
     return <div>Ma'lumotlar yuklanmoqda...</div>;
   }
 
   return (
     <TeacherCreateWrapper>
-      <h1>{isEditMode ? "O'qituvchini yangilash" : "O'qituvchi yaratish"}</h1>
+      <h1>
+        {isEditMode ? "O'qituvchini yangilash" : "Yangi o'qituvchi qo'shish"}
+      </h1>
       <form onSubmit={handleSubmit}>
         <Input
           value={teacherValues.firstName}
@@ -133,6 +131,7 @@ const CreateUpdateTeacher = () => {
           type="text"
           onChange={handleChange}
           placeholder="Ism"
+          required
         />
         <Input
           value={teacherValues.lastName}
@@ -140,6 +139,7 @@ const CreateUpdateTeacher = () => {
           type="text"
           onChange={handleChange}
           placeholder="Familiya"
+          required
         />
         <Input
           value={teacherValues.birthDate}
@@ -147,14 +147,21 @@ const CreateUpdateTeacher = () => {
           type="date"
           onChange={handleChange}
           placeholder="Tug'ilgan sana"
+          required
         />
+        {/* Agar o'qituvchiga sinflar biriktirilishi kerak bo'lsa */}
+        <label htmlFor="classes">Biriktirilgan sinf (bitta tanlang):</label>
         <Select
-          value={teacherValues.classes[0]?.toString() || ""} // Show first class
+          id="classes"
           name="classes"
+          value={teacherValues.classes[0] || ""} // Hozircha bitta sinf
           onChange={handleChange}
-          options={getOptionFromDataAdapter(classes, "name")}
-        />
-        <Button type="submit">Saqlash</Button>
+          // multiple // Agar bir nechta sinf tanlash kerak bo'lsa
+          options={getOptionFromDataAdapter(allClasses, "name", "id")}
+        >
+          <option value="">Sinf tanlanmagan</option>
+        </Select>
+        <Button type="submit" title="Saqlash" />
       </form>
     </TeacherCreateWrapper>
   );

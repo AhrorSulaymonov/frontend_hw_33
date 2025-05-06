@@ -1,21 +1,27 @@
 export const studentTableCols = [
   {
-    title: "First name",
+    title: "Ism",
     dataIndex: "firstName",
-    width: 30,
+    width: 25, // Umumiy width 100% bo'lishi uchun moslashtiring
   },
   {
-    title: "Last name",
+    title: "Familiya",
     dataIndex: "lastName",
-    width: 30,
+    width: 25,
   },
   {
-    title: "Birth date",
+    title: "Tug'ilgan sana",
     dataIndex: "birthDate",
-    width: 30,
+    width: 25,
+  },
+  // Sinf ID sini ko'rsatish foydali bo'lishi mumkin
+  {
+    title: "Sinf ID",
+    dataIndex: "classId",
+    width: 15,
   },
   {
-    title: "Actions",
+    title: "Amallar",
     dataIndex: "actions",
     width: 10,
   },

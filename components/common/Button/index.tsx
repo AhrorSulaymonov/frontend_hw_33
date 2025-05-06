@@ -3,10 +3,14 @@ import { ButtonWrapper, LinkWrapper } from "./Btn.styles";
 import { ButtonProps } from "./types";
 
 const Button: FC<ButtonProps> = (props) => {
-  const { children, title, onClick, href } = props;
+  // type prop uchun default qiymatni "button" qilib belgilaymiz
+  const { children, title, onClick, href, type = "button" } = props;
 
   return !href ? (
-    <ButtonWrapper onClick={onClick}>{children || title}</ButtonWrapper>
+    // ButtonWrapper ga to'g'ri type ni uzatamiz
+    <ButtonWrapper onClick={onClick} type={type}>
+      {children || title}
+    </ButtonWrapper>
   ) : (
     <LinkWrapper href={href}>{children || title}</LinkWrapper>
   );
