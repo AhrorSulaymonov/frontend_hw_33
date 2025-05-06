@@ -1,48 +1,79 @@
-import { Button, Table } from "@/components";
 import React from "react";
+import { Button, Table } from "@/components";
 import { studentTableCols } from "./columns";
-import { deleteStudentMutation, useStudents } from "@/hooks";
+import {
+  deleteStudentMutation,
+  useStudents,
+  useStudentsByClassId,
+} from "@/hooks";
 import { ActionsWrapper } from "./StTable.style";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
 const StudentsTable = () => {
-  const { data: users } = useStudents();
+  const router = useRouter();
   const queryClient = useQueryClient();
+
+  // URL'dan classId ni tekshirish
+  const { classId } = router.query;
+  console.log("classId:", classId); // Debug uchun log
+
+  // classId mavjud bo'lsa useStudentsByClassId, aks holda useStudents
+  const {
+    data: students,
+    isLoading,
+    isError,
+    error,
+  } = classId ? useStudentsByClassId(classId as string) : useStudents();
+
+  console.log("Students data:", students); // Ma'lumotlarni tekshirish
+  console.log("Loading state:", isLoading); // Loading holatini tekshirish
+  console.log("Error state:", isError, error); // Xatolarni tekshirish
+
   const deleteMutation = deleteStudentMutation({
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({
-        queryKey: ["students"],
-      });
-      toast.success("user.remote");
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      toast.success("O'quvchi muvaffaqiyatli o'chirildi!");
     },
     onError: (err: any) => {
-      console.error(err);
-      toast.error(`Something went wrong ! ${err?.status}`);
+      console.error("O'chirishda xatolik:", err);
+      toast.error(
+        `O'quvchini o'chirishda xatolik: ${err?.message || "Noma'lum xatolik"}`
+      );
     },
   });
 
-  const handleDelete = async (student: any) => {
-    if (window.confirm("Are you sure you want to delete this student?")) {
+  const handleDelete = (student: any) => {
+    if (
+      window.confirm(`O'quvchi ${student.name} ni o'chirishni xohlaysizmi?`)
+    ) {
       deleteMutation.mutate(student.id);
     }
   };
 
+  if (isLoading)
+    return (
+      <p>O'quvchilar yuklanmoqda... (Agar uzoq tursa, konsolni tekshiring)</p>
+    );
+  if (isError)
+    return (
+      <p>
+        O'quvchilarni yuklashda xatolik yuz berdi. Xatolik: {error?.message}
+      </p>
+    );
+
   return (
-    <div>
-      <Table
-        actionsCol={(student) => {
-          return (
-            <ActionsWrapper>
-              <Button onClick={() => handleDelete(student)}>Delete</Button>
-              <Button href={`/students/edit/${student.id}`}>Update</Button>
-            </ActionsWrapper>
-          );
-        }}
-        columns={studentTableCols}
-        dataSrc={users}
-      />
-    </div>
+    <Table
+      dataSrc={students}
+      columns={studentTableCols}
+      actionsCol={(student) => (
+        <ActionsWrapper>
+          <Button onClick={() => handleDelete(student)}>O'chirish</Button>
+          <Button href={`/students/edit/${student.id}`}>Yangilash</Button>
+        </ActionsWrapper>
+      )}
+    />
   );
 };
 

@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
 const ClassesTable = () => {
-  const { data: users } = useClasses();
+  const { data: classes } = useClasses();
   const queryClient = useQueryClient();
   const deleteMutation = deleteClassMutation({
     onSuccess: () => {
@@ -36,7 +36,8 @@ const ClassesTable = () => {
           </ActionsWrapper>
         )}
         columns={classTableCols}
-        dataSrc={users}
+        dataSrc={classes}
+        isClass={true}
       />
     </div>
   );

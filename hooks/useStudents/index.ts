@@ -3,6 +3,7 @@ import {
   deleteStudent,
   getOneStudent,
   getStudents,
+  getStudentsByClassId,
   updateStudent,
 } from "@/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -12,6 +13,14 @@ export function useStudents() {
   return useQuery({
     queryFn: getStudents,
     queryKey: ["students"],
+  });
+}
+
+export function useStudentsByClassId(classId: string | number) {
+  return useQuery({
+    queryKey: ["students-by-classId", classId],
+    queryFn: ({ queryKey }) => getStudentsByClassId(queryKey[1]),
+    enabled: !!classId,
   });
 }
 

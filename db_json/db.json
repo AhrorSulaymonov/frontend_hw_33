@@ -2,17 +2,17 @@
   "students": [
     {
       "id": "1746186862783",
-      "firstName": "Kimdira",
+      "firstName": "Kimdira4",
       "lastName": "Nimayeva",
       "birthDate": "2025-05-17",
-      "classId": null
+      "classId": "1746537051669"
     },
     {
       "id": "1746465506491",
       "firstName": "Ahror",
       "lastName": "Sulaymonov",
       "birthDate": "2025-05-01",
-      "classId": null
+      "classId": "null"
     },
     {
       "id": "1746465528059",
@@ -20,12 +20,25 @@
       "lastName": "rvrvrt",
       "birthDate": "2025-05-02",
       "classId": "1746464881494"
+    },
+    {
+      "id": "1746541494651",
+      "firstName": "Ahror",
+      "lastName": "Sulaymonov",
+      "birthDate": "2025-04-29",
+      "classId": "1746471012464"
     }
   ],
   "classes": [
     {
       "id": "1746471012464",
       "name": "Gaming Mouses",
+      "studentCount": 0,
+      "teacherId": "1746470694932"
+    },
+    {
+      "id": "1746537051669",
+      "name": "Qatiq1",
       "studentCount": 0,
       "teacherId": "1746470694932"
     }
@@ -38,6 +51,15 @@
       "birthDate": "2025-04-29",
       "classes": [
         1746465703837
+      ]
+    },
+    {
+      "id": "1746537075414",
+      "firstName": "Kimdira",
+      "lastName": "Nimayeva",
+      "birthDate": "2025-04-28",
+      "classes": [
+        1746537051669
       ]
     }
   ],

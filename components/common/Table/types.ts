@@ -15,4 +15,5 @@ export interface TableProps {
   columns: TableColumn[];
   loading?: boolean;
   actionsCol?: (data: DefaultObjectType) => React.ReactNode;
+  isClass?: boolean;
 }

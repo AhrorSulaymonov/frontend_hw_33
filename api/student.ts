@@ -45,3 +45,13 @@ export const updateStudent = async (data: Student) => {
     alert("Failed to update student");
   }
 };
+
+export const getStudentsByClassId = async (classId: string | number) => {
+  try {
+    const res = await instance.get<Student[]>(`/students?classId=${+classId}`);
+    return res.data;
+  } catch (error) {
+    alert("Sinfdagi o'quvchilarni olishda xatolik!");
+    throw error;
+  }
+};

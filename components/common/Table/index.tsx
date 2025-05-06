@@ -1,12 +1,27 @@
 import React, { FC } from "react";
+import { useRouter } from "next/router";
+import styled from "styled-components";
 import { TableProps } from "./types";
-import { TableWrapper } from "./Table.styles";
+
+// TypeScript uchun styled-component'ni kengaytirish
+interface TableWrapperProps
+  extends React.TableHTMLAttributes<HTMLTableElement> {
+  isClass?: boolean;
+}
+
+const TableWrapper = styled.table<TableWrapperProps>`
+  tr {
+    cursor: ${(props) => (props.isClass ? "pointer" : "default")};
+  }
+`;
 
 const Table: FC<TableProps> = (props) => {
+  const router = useRouter();
   const {
     columns = [],
     dataSrc = [],
     loading = true,
+    isClass,
     actionsCol = () => null,
   } = props;
 
@@ -28,8 +43,15 @@ const Table: FC<TableProps> = (props) => {
       </tr>
     ) : null;
 
+  const handleRowClick = (data: any) => {
+    if (isClass) {
+      const classId = data.id; // classId ni aniqlash
+      router.push(`/students?classId=${classId}`);
+    }
+  };
+
   return (
-    <TableWrapper>
+    <TableWrapper isClass={isClass}>
       <table>
         <thead>
           <tr>
@@ -44,7 +66,10 @@ const Table: FC<TableProps> = (props) => {
           {loadingContent}
           {emptyContent}
           {dataSrc.map((data) => (
-            <tr key={data[columns[0]?.dataIndex]}>
+            <tr
+              key={data[columns[0]?.dataIndex]}
+              onClick={() => handleRowClick(data)}
+            >
               {columns.map((col) => {
                 return col.dataIndex === "actions" ? (
                   <td style={{ width: `${col.width}%` }} key={col.dataIndex}>
